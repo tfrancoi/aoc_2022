@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::prelude::*;
 
+
 fn get_trees(trees: &Vec<Vec<usize>>, i: usize, j: usize) -> Vec<Vec<usize>> {
     vec![
         (0..i).map(|k| trees[j][k]).collect(), 

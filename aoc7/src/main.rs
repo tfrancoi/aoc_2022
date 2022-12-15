@@ -2,6 +2,8 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::cell::RefCell;
+
 
 
 #[derive(Eq, Hash, PartialEq, Clone, Copy, Debug)]
@@ -18,11 +20,11 @@ fn get_parent(path: &str) -> String {
     (splitted.join("/") + "/").to_string()
 }
 
-fn get_size(dir: &str, dirs: &HashMap<String, HashSet<AocFile>>) -> usize {
+fn get_size(dir: &str, dirs: &HashMap<String, RefCell<HashSet<AocFile>>>) -> usize {
     let mut size:usize = 0;
     for k in dirs.keys() {
         if k.starts_with(dir) {
-            for f in dirs[k].iter() {
+            for f in dirs[k].borrow().iter() {
                 size += f.size;
             }
         }
@@ -32,7 +34,7 @@ fn get_size(dir: &str, dirs: &HashMap<String, HashSet<AocFile>>) -> usize {
 }
 
 fn aoc(input: &String) -> (usize, usize) {
-    let mut dirs:HashMap<String, HashSet<AocFile>> = HashMap::new();
+    let mut dirs:HashMap<String, RefCell<HashSet<AocFile>>> = HashMap::new();
     let mut cur_dir = "".to_string();
     for command in input.split("\n").filter(|&x| x != "") {
         let line:Vec<&str> = command.split(" ").collect();
@@ -40,7 +42,7 @@ fn aoc(input: &String) -> (usize, usize) {
         if line[0] == "$" {
             if line[1] == "cd" {
                 if cur_dir == "".to_string() {
-                    dirs.insert(line[2].to_string(), HashSet::new());
+                    dirs.insert(line[2].to_string(), RefCell::new(HashSet::new()));
                     cur_dir = line[2].to_string();
                 }
                 else if line[2] == ".." {
@@ -50,7 +52,7 @@ fn aoc(input: &String) -> (usize, usize) {
                     cur_dir = cur_dir  + &line[2].to_string() + "/";
                     let existing_dir = dirs.get(&*cur_dir);
                     if existing_dir == None {
-                        dirs.insert(cur_dir.clone(), HashSet::new());
+                        dirs.insert(cur_dir.clone(), RefCell::new(HashSet::new()));
                     } 
                 }
             }
@@ -58,16 +60,11 @@ fn aoc(input: &String) -> (usize, usize) {
         else {
             if line[0] != "dir" {
             
-                let dir = dirs.get(&*cur_dir).unwrap().clone();
-                let mut new_set:HashSet<AocFile> = HashSet::new();
-                for f in dir.iter() {
-                    new_set.insert(*f);
-                }
-                new_set.insert(AocFile {
+                let mut dir = dirs.get(&*cur_dir).unwrap().borrow_mut();
+                dir.insert(AocFile {
                     size: line[0].parse().expect("Nan"),
                     name: line[1],
                 });
-                dirs.insert(cur_dir.clone(), new_set);
             }
         }
         
