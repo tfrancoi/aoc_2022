@@ -67,10 +67,15 @@ fn aoc(input: &String) -> isize {
 
     }
     let merged_ranges = merged_ranges(&mut ranges);
-    let beacons_in_range = beacons.iter().filter(|b|
-        merged_ranges.iter().map(|r|
-            b.0 >= r.0 && b.0 <= r.1).reduce(|acc, x| acc || x).unwrap()
-        ).collect::<Vec<_>>().len();
+    let beacons_in_range = beacons
+        .iter()
+        .filter(|b| merged_ranges
+            .iter()
+            .map(|r| b.0 >= r.0 && b.0 <= r.1)
+            .reduce(|acc, x| acc || x).unwrap()
+        )
+        .collect::<Vec<_>>()
+        .len();
 
     merged_ranges.iter().map(|r| r.1 - r.0 + 1).sum::<isize>() - beacons_in_range as isize
 }
@@ -108,4 +113,6 @@ fn main() {
     println!("{:?}", aoc(&contents));
     println!("{:?}", aoc2(&contents));
 }
+
+//check tout les point du perimètre extérieur: compte et quand tu arrive à 4 c'est ton trou
 
